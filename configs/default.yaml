@@ -1,0 +1,69 @@
+# Input data stays outside this project and must be treated as read-only.
+paths:
+  dataset_root: 'D:\New folder (12)\t2-ragbench'
+  work_root: work
+  registry_db: work/registry.sqlite3
+  index_dir: work/indexes
+  output_dir: work/outputs
+
+models:
+  ollama_base_url: http://127.0.0.1:11434
+  text_description_model: qwen3:8b
+  vision_model: qwen3-vl:8b-instruct
+  embedding_provider: ollama
+  embedding_model: qwen3-embedding:4b
+  deepinfra_base_url: https://api.deepinfra.com/v1/openai
+  deepinfra_inference_url: https://api.deepinfra.com/v1/inference
+  answer_model: Qwen/Qwen3-235B-A22B-Instruct-2507
+  reranker_model: Qwen/Qwen3-Reranker-4B
+  # Optional local dispute judge. It never changes official benchmark scores.
+  evaluation_judge_model: qwen3:8b
+
+retrieval:
+  max_chunk_words: 500
+  overlap_words: 80
+  lexical_candidates: 30
+  dense_candidates: 30
+  fused_candidates: 30
+  rerank_candidates: 30
+  answer_contexts: 8
+  rrf_k: 60
+  # Keep generated descriptions disabled until dev evaluation proves a gain.
+  include_descriptions: false
+  # Browser-only typo expansion. Formal evaluation keeps the original query.
+  typo_minimum_length: 4
+  typo_similarity_threshold: 85
+  typo_ambiguity_margin: 5
+  typo_max_edits: 2
+
+runtime:
+  request_timeout_seconds: 120
+  max_retries: 3
+  embedding_batch_size: 16
+  random_seed: 42
+  # Reuse one model during a batch stage. Stop it between stages if RAM is low.
+  ollama_keep_alive: '2m'
+
+generation:
+  # Make at most one extra paid answer request when JSON is invalid or the
+  # displayed number disagrees with the locally evaluated expression.
+  correction_attempts: 1
+  calculator_absolute_tolerance: 0.01
+  calculator_relative_tolerance: 0.0001
+
+evaluation:
+  allow_test_questions: false
+  allow_test_labels: false
+  require_frozen_manifest_for_test: true
+  numeric_absolute_tolerance: 0.0001
+  numeric_relative_tolerance: 0.0001
+  # Secondary display/semantic metric tolerates ordinary financial rounding.
+  semantic_absolute_tolerance: 0.0001
+  semantic_relative_tolerance: 0.001
+  # Retrieval metrics need ten results even though the answer LLM receives eight.
+  retrieval_top_k: 10
+
+raw_pdf:
+  minimum_text_characters: 200
+  render_dpi: 150
+  extract_tables: true
